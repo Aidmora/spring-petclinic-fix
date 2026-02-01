@@ -35,43 +35,39 @@ class VetControllerTest {
     @MockitoBean
     private VetRepository vetRepository;
 
-    private Vet vet1;
-    private Vet vet2;
-    private Vet vet3;
-    private Specialty radiology;
-    private Specialty surgery;
+    private Vet jamesCarter;
+    private Vet helenLeary;
+    private Vet lindaDouglas;
+    private Specialty especialidadRadiologia;
+    private Specialty especialidadCirugia;
 
     @BeforeEach
     void setUp() {
-        // Configurar especialidades
-        radiology = new Specialty();
-        radiology.setId(1);
-        radiology.setName("radiology");
+        especialidadRadiologia = new Specialty();
+        especialidadRadiologia.setId(1);
+        especialidadRadiologia.setName("radiology");
 
-        surgery = new Specialty();
-        surgery.setId(2);
-        surgery.setName("surgery");
+        especialidadCirugia = new Specialty();
+        especialidadCirugia.setId(2);
+        especialidadCirugia.setName("surgery");
 
-        // Configurar veterinario 1 - sin especialidades
-        vet1 = new Vet();
-        vet1.setId(1);
-        vet1.setFirstName("James");
-        vet1.setLastName("Carter");
+        jamesCarter = new Vet();
+        jamesCarter.setId(1);
+        jamesCarter.setFirstName("James");
+        jamesCarter.setLastName("Carter");
 
-        // Configurar veterinario 2 - con una especialidad
-        vet2 = new Vet();
-        vet2.setId(2);
-        vet2.setFirstName("Helen");
-        vet2.setLastName("Leary");
-        vet2.addSpecialty(radiology);
+        helenLeary = new Vet();
+        helenLeary.setId(2);
+        helenLeary.setFirstName("Helen");
+        helenLeary.setLastName("Leary");
+        helenLeary.addSpecialty(especialidadRadiologia);
 
-        // Configurar veterinario 3 - con múltiples especialidades
-        vet3 = new Vet();
-        vet3.setId(3);
-        vet3.setFirstName("Linda");
-        vet3.setLastName("Douglas");
-        vet3.addSpecialty(surgery);
-        vet3.addSpecialty(radiology);
+        lindaDouglas = new Vet();
+        lindaDouglas.setId(3);
+        lindaDouglas.setFirstName("Linda");
+        lindaDouglas.setLastName("Douglas");
+        lindaDouglas.addSpecialty(especialidadCirugia);
+        lindaDouglas.addSpecialty(especialidadRadiologia);
     }
 
     // Tests para GET /vets.html (Vista HTML)
@@ -84,11 +80,11 @@ class VetControllerTest {
         @DisplayName("Debería mostrar lista de veterinarios con paginación")
         void showVetList_ShouldShowVetListWithPagination() throws Exception {
             // ARRANGE
-            Page<Vet> vetPage = new PageImpl<>(
-                    List.of(vet1, vet2, vet3),
+            Page<Vet> paginaVeterinarios = new PageImpl<>(
+                    List.of(jamesCarter, helenLeary, lindaDouglas),
                     PageRequest.of(0, 5),
                     3);
-            when(vetRepository.findAll(any(Pageable.class))).thenReturn(vetPage);
+            when(vetRepository.findAll(any(Pageable.class))).thenReturn(paginaVeterinarios);
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets.html"))
@@ -104,11 +100,11 @@ class VetControllerTest {
         @DisplayName("Debería mostrar página 1 por defecto")
         void showVetList_ShouldShowFirstPageByDefault() throws Exception {
             // ARRANGE
-            Page<Vet> vetPage = new PageImpl<>(
-                    List.of(vet1, vet2, vet3),
+            Page<Vet> paginaInicial = new PageImpl<>(
+                    List.of(jamesCarter, helenLeary, lindaDouglas),
                     PageRequest.of(0, 5),
                     3);
-            when(vetRepository.findAll(any(Pageable.class))).thenReturn(vetPage);
+            when(vetRepository.findAll(any(Pageable.class))).thenReturn(paginaInicial);
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets.html"))
@@ -120,11 +116,11 @@ class VetControllerTest {
         @DisplayName("Debería manejar parámetro de página correctamente")
         void showVetList_ShouldHandlePageParameter() throws Exception {
             // ARRANGE
-            Page<Vet> vetPage = new PageImpl<>(
-                    List.of(vet1),
+            Page<Vet> segundaPagina = new PageImpl<>(
+                    List.of(jamesCarter),
                     PageRequest.of(1, 5),
                     6);
-            when(vetRepository.findAll(any(Pageable.class))).thenReturn(vetPage);
+            when(vetRepository.findAll(any(Pageable.class))).thenReturn(segundaPagina);
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets.html")
@@ -137,11 +133,11 @@ class VetControllerTest {
         @DisplayName("Debería calcular total de páginas correctamente")
         void showVetList_ShouldCalculateTotalPagesCorrectly() throws Exception {
             // ARRANGE
-            Page<Vet> vetPage = new PageImpl<>(
-                    List.of(vet1, vet2, vet3),
+            Page<Vet> paginaConDoceElementos = new PageImpl<>(
+                    List.of(jamesCarter, helenLeary, lindaDouglas),
                     PageRequest.of(0, 5),
                     12);
-            when(vetRepository.findAll(any(Pageable.class))).thenReturn(vetPage);
+            when(vetRepository.findAll(any(Pageable.class))).thenReturn(paginaConDoceElementos);
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets.html"))
@@ -154,8 +150,8 @@ class VetControllerTest {
         @DisplayName("Debería mostrar lista vacía cuando no hay veterinarios")
         void showVetList_ShouldShowEmptyList_WhenNoVets() throws Exception {
             // ARRANGE
-            Page<Vet> emptyPage = new PageImpl<>(List.of());
-            when(vetRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+            Page<Vet> sinVeterinarios = new PageImpl<>(List.of());
+            when(vetRepository.findAll(any(Pageable.class))).thenReturn(sinVeterinarios);
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets.html"))
@@ -174,7 +170,7 @@ class VetControllerTest {
         @DisplayName("Debería retornar lista de veterinarios en formato JSON")
         void showResourcesVetList_ShouldReturnVetsAsJson() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet1, vet2, vet3));
+            when(vetRepository.findAll()).thenReturn(List.of(jamesCarter, helenLeary, lindaDouglas));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")
@@ -187,7 +183,7 @@ class VetControllerTest {
         @DisplayName("Debería incluir vetList en la respuesta JSON")
         void showResourcesVetList_ShouldIncludeVetListInResponse() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet1, vet2));
+            when(vetRepository.findAll()).thenReturn(List.of(jamesCarter, helenLeary));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")
@@ -201,7 +197,7 @@ class VetControllerTest {
         @DisplayName("Debería retornar datos correctos del veterinario")
         void showResourcesVetList_ShouldReturnCorrectVetData() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet1));
+            when(vetRepository.findAll()).thenReturn(List.of(jamesCarter));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")
@@ -216,7 +212,7 @@ class VetControllerTest {
         @DisplayName("Debería incluir especialidades en la respuesta JSON")
         void showResourcesVetList_ShouldIncludeSpecialtiesInResponse() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet2));
+            when(vetRepository.findAll()).thenReturn(List.of(helenLeary));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")
@@ -244,7 +240,7 @@ class VetControllerTest {
         @DisplayName("Debería retornar veterinario con múltiples especialidades")
         void showResourcesVetList_ShouldReturnVetWithMultipleSpecialties() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet3));
+            when(vetRepository.findAll()).thenReturn(List.of(lindaDouglas));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")
@@ -257,7 +253,7 @@ class VetControllerTest {
         @DisplayName("Debería retornar veterinario sin especialidades con array vacío")
         void showResourcesVetList_ShouldReturnVetWithEmptySpecialties() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet1));
+            when(vetRepository.findAll()).thenReturn(List.of(jamesCarter));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")
@@ -271,7 +267,7 @@ class VetControllerTest {
         @DisplayName("Debería retornar todos los veterinarios sin paginación")
         void showResourcesVetList_ShouldReturnAllVetsWithoutPagination() throws Exception {
             // ARRANGE
-            when(vetRepository.findAll()).thenReturn(List.of(vet1, vet2, vet3));
+            when(vetRepository.findAll()).thenReturn(List.of(jamesCarter, helenLeary, lindaDouglas));
 
             // ACT & ASSERT
             mockMvc.perform(get("/vets")

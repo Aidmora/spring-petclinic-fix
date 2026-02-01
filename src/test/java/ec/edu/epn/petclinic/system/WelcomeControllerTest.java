@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 /**
  * Tests de integración para WelcomeController usando MockMvc.
@@ -17,6 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(WelcomeController.class)
 @ActiveProfiles("test")
 class WelcomeControllerTest {
+
+    private static final String ROOT_PATH = "/";
+    private static final String WELCOME_VIEW = "welcome";
 
     @Autowired
     private MockMvc mockMvc;
@@ -27,8 +31,9 @@ class WelcomeControllerTest {
         // ARRANGE
 
         // ACT & ASSERT
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("welcome"));
+        ResultActions resultado = mockMvc.perform(get(ROOT_PATH));
+
+        resultado.andExpect(status().isOk())
+                .andExpect(view().name(WELCOME_VIEW));
     }
 }

@@ -20,6 +20,9 @@ import jakarta.servlet.ServletException;
 @ActiveProfiles("test")
 class CrashControllerTest {
 
+    private static final String OUPS_ENDPOINT = "/oups";
+    private static final String EXPECTED_ERROR_MSG = "Expected: controller used to showcase what happens when an exception is thrown";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -27,13 +30,12 @@ class CrashControllerTest {
     @DisplayName("GET /oups - Debería lanzar RuntimeException")
     void triggerException_ShouldThrowRuntimeException() {
         // ARRANGE & ACT
-        // El controlador lanza RuntimeException, que se envuelve en ServletException
-        ServletException exception = assertThrows(ServletException.class,
-                () -> mockMvc.perform(get("/oups")));
+        ServletException excepcionCapturada = assertThrows(ServletException.class,
+                () -> mockMvc.perform(get(OUPS_ENDPOINT)));
 
         // ASSERT
-        assertThat(exception.getCause()).isInstanceOf(RuntimeException.class);
-        assertThat(exception.getCause().getMessage())
-                .contains("Expected: controller used to showcase what happens when an exception is thrown");
+        Throwable causa = excepcionCapturada.getCause();
+        assertThat(causa).isInstanceOf(RuntimeException.class);
+        assertThat(causa.getMessage()).contains(EXPECTED_ERROR_MSG);
     }
 }
