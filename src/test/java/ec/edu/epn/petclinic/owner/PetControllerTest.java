@@ -27,8 +27,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Pruebas de integración para PetController usando MockMvc.
- * Valida el comportamiento de los endpoints REST relacionados con Pet.
+ * Validación del controlador de mascotas con MockMvc.
+ * Incluye escenarios de alta, edición y gestión de tipos.
  */
 @WebMvcTest(PetController.class)
 @Import(PetTypeFormatter.class)
@@ -44,40 +44,40 @@ class PetControllerTest {
     @MockitoBean
     private PetTypeRepository petTypeRepository;
 
-    private Owner testOwner;
-    private Pet testPet;
-    private PetType dogType;
-    private PetType catType;
+    private Owner propietarioBase;
+    private Pet animalExistente;
+    private PetType tipoPerro;
+    private PetType tipoFelino;
 
     @BeforeEach
     void setUp() {
-        // Configurar tipos de mascota
-        dogType = new PetType();
-        dogType.setId(1);
-        dogType.setName("dog");
+        // definición de tipos disponibles
+        tipoPerro = new PetType();
+        tipoPerro.setId(1);
+        tipoPerro.setName("dog");
 
-        catType = new PetType();
-        catType.setId(2);
-        catType.setName("cat");
+        tipoFelino = new PetType();
+        tipoFelino.setId(2);
+        tipoFelino.setName("cat");
 
-        // Configurar owner de prueba
-        testOwner = new Owner();
-        testOwner.setId(1);
-        testOwner.setFirstName("George");
-        testOwner.setLastName("Franklin");
-        testOwner.setAddress("110 W. Liberty St.");
-        testOwner.setCity("Madison");
-        testOwner.setTelephone("6085551023");
+        // propietario para las pruebas
+        propietarioBase = new Owner();
+        propietarioBase.setId(1);
+        propietarioBase.setFirstName("George");
+        propietarioBase.setLastName("Franklin");
+        propietarioBase.setAddress("110 W. Liberty St.");
+        propietarioBase.setCity("Madison");
+        propietarioBase.setTelephone("6085551023");
 
-        // Configurar pet de prueba
-        testPet = new Pet();
-        testPet.setId(1);
-        testPet.setName("Leo");
-        testPet.setBirthDate(LocalDate.of(2020, 5, 15));
-        testPet.setType(catType);
+        // mascota ya registrada
+        animalExistente = new Pet();
+        animalExistente.setId(1);
+        animalExistente.setName("Leo");
+        animalExistente.setBirthDate(LocalDate.of(2020, 5, 15));
+        animalExistente.setType(tipoFelino);
     }
 
-    // Tests para GET /owners/{ownerId}/pets/new
+    // alta de nueva mascota
 
     @Nested
     @DisplayName("GET /owners/{ownerId}/pets/new - Formulario de creación de mascota")
@@ -86,11 +86,10 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar formulario de creación de mascota")
         void initCreationForm_ShouldShowPetCreationForm() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Act & Assert
             mockMvc.perform(get("/owners/{ownerId}/pets/new", 1))
                     .andExpect(status().isOk())
                     .andExpect(view().name("pets/createOrUpdatePetForm"))
@@ -102,18 +101,18 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
         void initCreationForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
-            // ARRANGE
+            // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
 
-            // ACT & ASSERT
-            ServletException exception = assertThrows(ServletException.class, () ->
-                mockMvc.perform(get("/owners/{ownerId}/pets/new", 999))
-            );
-            assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+            // propietario inexistente provoca error
+            // Act & Assert
+            ServletException fallo = assertThrows(ServletException.class,
+                    () -> mockMvc.perform(get("/owners/{ownerId}/pets/new", 999)));
+            assertInstanceOf(IllegalArgumentException.class, fallo.getCause());
         }
     }
 
-    // Tests para POST /owners/{ownerId}/pets/new
+    // procesamiento del formulario de alta
 
     @Nested
     @DisplayName("POST /owners/{ownerId}/pets/new - Procesar creación de mascota")
@@ -122,12 +121,11 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería crear mascota y redirigir cuando datos son válidos")
         void processCreationForm_ShouldCreateAndRedirect_WhenValidData() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-            when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            when(ownerRepository.save(any(Owner.class))).thenReturn(propietarioBase);
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
                     .param("birthDate", "2020-05-15")
@@ -140,11 +138,10 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando name está vacío")
         void processCreationForm_ShouldShowErrors_WhenNameEmpty() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "")
                     .param("birthDate", "2020-05-15")
@@ -157,11 +154,12 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando birthDate es null")
         void processCreationForm_ShouldShowErrors_WhenBirthDateNull() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
 
-            // ACT & ASSERT
+            // sin fecha de nacimiento
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
                     .param("type", "dog"))
@@ -173,16 +171,15 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando birthDate está en el futuro")
         void processCreationForm_ShouldShowErrors_WhenBirthDateInFuture() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            String futureDate = LocalDate.now().plusDays(30).toString();
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Act
+            String fechaFutura = LocalDate.now().plusDays(30).toString();
+            // Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
-                    .param("birthDate", futureDate)
+                    .param("birthDate", fechaFutura)
                     .param("type", "dog"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("pets/createOrUpdatePetForm"))
@@ -192,11 +189,12 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando type es null para pet nuevo")
         void processCreationForm_ShouldShowErrors_WhenTypeNull() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
 
-            // ACT & ASSERT
+            // tipo de mascota no especificado
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
                     .param("birthDate", "2020-05-15"))
@@ -208,16 +206,18 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando nombre de mascota ya existe para el owner")
         void processCreationForm_ShouldShowErrors_WhenDuplicatePetName() throws Exception {
-            // ARRANGE
-            Pet existingPet = new Pet();
-            existingPet.setName("Buddy");
-            testOwner.addPet(existingPet);
-            existingPet.setId(10); // Set ID so pet is not considered "new" and duplicate check works
+            // Arrange
+            Pet mascotaPrevia = new Pet();
+            mascotaPrevia.setName("Buddy");
+            propietarioBase.addPet(mascotaPrevia);
+            mascotaPrevia.setId(10);
+            // Act
 
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
 
-            // ACT & ASSERT
+            // nombre repetido
+            // Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
                     .param("birthDate", "2020-05-15")
@@ -228,7 +228,7 @@ class PetControllerTest {
         }
     }
 
-    // Tests para GET /owners/{ownerId}/pets/{petId}/edit
+    // formulario de edición de mascota
 
     @Nested
     @DisplayName("GET /owners/{ownerId}/pets/{petId}/edit - Formulario de edición de mascota")
@@ -237,12 +237,11 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar formulario de edición con datos de la mascota")
         void initUpdateForm_ShouldShowEditFormWithPetData() throws Exception {
-            // ARRANGE
-            testOwner.getPets().add(testPet);
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            // ACT & ASSERT
+            // Arrange
+            propietarioBase.getPets().add(animalExistente);
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Act & Assert
             mockMvc.perform(get("/owners/{ownerId}/pets/{petId}/edit", 1, 1))
                     .andExpect(status().isOk())
                     .andExpect(view().name("pets/createOrUpdatePetForm"))
@@ -252,7 +251,7 @@ class PetControllerTest {
         }
     }
 
-    // Tests para POST /owners/{ownerId}/pets/{petId}/edit
+    // procesamiento de edición
 
     @Nested
     @DisplayName("POST /owners/{ownerId}/pets/{petId}/edit - Procesar edición de mascota")
@@ -261,13 +260,12 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería actualizar mascota y redirigir cuando datos son válidos")
         void processUpdateForm_ShouldUpdateAndRedirect_WhenValidData() throws Exception {
-            // ARRANGE
-            testOwner.getPets().add(testPet);
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-            when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
-
-            // ACT & ASSERT
+            // Arrange
+            propietarioBase.getPets().add(animalExistente);
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            when(ownerRepository.save(any(Owner.class))).thenReturn(propietarioBase);
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/{petId}/edit", 1, 1)
                     .param("name", "Leo Updated")
                     .param("birthDate", "2020-05-15")
@@ -280,12 +278,11 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando name está vacío en update")
         void processUpdateForm_ShouldShowErrors_WhenNameEmpty() throws Exception {
-            // ARRANGE
-            testOwner.getPets().add(testPet);
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            // ACT & ASSERT
+            // Arrange
+            propietarioBase.getPets().add(animalExistente);
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/{petId}/edit", 1, 1)
                     .param("name", "")
                     .param("birthDate", "2020-05-15")
@@ -298,17 +295,16 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando birthDate está en el futuro en update")
         void processUpdateForm_ShouldShowErrors_WhenBirthDateInFuture() throws Exception {
-            // ARRANGE
-            testOwner.getPets().add(testPet);
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            String futureDate = LocalDate.now().plusDays(30).toString();
-
-            // ACT & ASSERT
+            // Arrange
+            propietarioBase.getPets().add(animalExistente);
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Act
+            String fechaPosterior = LocalDate.now().plusDays(30).toString();
+            // Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/{petId}/edit", 1, 1)
                     .param("name", "Leo")
-                    .param("birthDate", futureDate)
+                    .param("birthDate", fechaPosterior)
                     .param("type", "cat"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("pets/createOrUpdatePetForm"))
@@ -318,21 +314,20 @@ class PetControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando nombre duplicado con otra mascota")
         void processUpdateForm_ShouldShowErrors_WhenDuplicateNameWithOtherPet() throws Exception {
-            // ARRANGE
-            Pet anotherPet = new Pet();
-            anotherPet.setId(2);
-            anotherPet.setName("Max");
-            anotherPet.setType(dogType);
-            anotherPet.setBirthDate(LocalDate.of(2019, 1, 1));
+            // Arrange
+            Pet otraMascota = new Pet();
+            otraMascota.setId(2);
+            otraMascota.setName("Max");
+            otraMascota.setType(tipoPerro);
+            otraMascota.setBirthDate(LocalDate.of(2019, 1, 1));
 
-            // Add anotherPet BEFORE testPet so it's found first when checking for duplicates
-            testOwner.getPets().add(anotherPet);
-            testOwner.getPets().add(testPet);
-
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(petTypeRepository.findPetTypes()).thenReturn(List.of(dogType, catType));
-
-            // ACT & ASSERT
+            // agregar primero la otra mascota para que se detecte duplicado
+            propietarioBase.getPets().add(otraMascota);
+            propietarioBase.getPets().add(animalExistente);
+            // Act
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
+            when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
+            // Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/{petId}/edit", 1, 1)
                     .param("name", "Max")
                     .param("birthDate", "2020-05-15")

@@ -29,8 +29,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Pruebas de integración para OwnerController usando MockMvc.
- * Valida el comportamiento de los endpoints REST relacionados con Owner.
+ * Tests de integración del controlador de propietarios.
+ * Verificación de endpoints CRUD y búsqueda paginada.
  */
 @WebMvcTest(OwnerController.class)
 @ActiveProfiles("test")
@@ -42,29 +42,29 @@ class OwnerControllerTest {
     @MockitoBean
     private OwnerRepository ownerRepository;
 
-    private Owner testOwner;
-    private Owner testOwner2;
+    private Owner duenoPrimario;
+    private Owner duenoSecundario;
 
     @BeforeEach
     void setUp() {
-        testOwner = new Owner();
-        testOwner.setId(1);
-        testOwner.setFirstName("George");
-        testOwner.setLastName("Franklin");
-        testOwner.setAddress("110 W. Liberty St.");
-        testOwner.setCity("Madison");
-        testOwner.setTelephone("6085551023");
+        duenoPrimario = new Owner();
+        duenoPrimario.setId(1);
+        duenoPrimario.setFirstName("George");
+        duenoPrimario.setLastName("Franklin");
+        duenoPrimario.setAddress("110 W. Liberty St.");
+        duenoPrimario.setCity("Madison");
+        duenoPrimario.setTelephone("6085551023");
 
-        testOwner2 = new Owner();
-        testOwner2.setId(2);
-        testOwner2.setFirstName("Betty");
-        testOwner2.setLastName("Davis");
-        testOwner2.setAddress("638 Cardinal Ave.");
-        testOwner2.setCity("Sun Prairie");
-        testOwner2.setTelephone("6085551749");
+        duenoSecundario = new Owner();
+        duenoSecundario.setId(2);
+        duenoSecundario.setFirstName("Betty");
+        duenoSecundario.setLastName("Davis");
+        duenoSecundario.setAddress("638 Cardinal Ave.");
+        duenoSecundario.setCity("Sun Prairie");
+        duenoSecundario.setTelephone("6085551749");
     }
 
-    // Tests para GET /owners/new
+    // === Bloque: formulario de alta ===
     @Nested
     @DisplayName("GET /owners/new - Formulario de creación")
     class InitCreationFormTests {
@@ -72,9 +72,7 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar formulario de creación con status 200")
         void initCreationForm_ShouldReturnCreationForm() throws Exception {
-            // ARRANGE - No requiere configuración
-
-            // ACT & ASSERT
+            // Act & Assert
             mockMvc.perform(get("/owners/new"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("owners/createOrUpdateOwnerForm"))
@@ -82,23 +80,21 @@ class OwnerControllerTest {
         }
     }
 
-    // Tests para POST /owners/new
+    // === Bloque: procesamiento de alta ===
 
     @Nested
     @DisplayName("POST /owners/new - Procesar creación")
     class ProcessCreationFormTests {
-
         @Test
         @DisplayName("Debería crear owner y redirigir cuando datos son válidos")
         void processCreationForm_ShouldCreateAndRedirect_WhenValidData() throws Exception {
-            // ARRANGE
-            when(ownerRepository.save(any(Owner.class))).thenAnswer(invocation -> {
-                Owner owner = invocation.getArgument(0);
-                owner.setId(1);
-                return owner;
+            // Arrange
+            when(ownerRepository.save(any(Owner.class))).thenAnswer(invocacion -> {
+                Owner o = invocacion.getArgument(0);
+                o.setId(1);
+                return o;
             });
-
-            // ACT & ASSERT
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
                     .param("lastName", "Doe")
@@ -113,9 +109,8 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando firstName está vacío")
         void processCreationForm_ShouldShowErrors_WhenFirstNameEmpty() throws Exception {
-            // ARRANGE - firstName vacío
-
-            // ACT & ASSERT
+            // firstName sin contenido
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "")
                     .param("lastName", "Doe")
@@ -130,9 +125,7 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando lastName está vacío")
         void processCreationForm_ShouldShowErrors_WhenLastNameEmpty() throws Exception {
-            // ARRANGE - lastName vacío
-
-            // ACT & ASSERT
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
                     .param("lastName", "")
@@ -147,9 +140,8 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando address está vacío")
         void processCreationForm_ShouldShowErrors_WhenAddressEmpty() throws Exception {
-            // ARRANGE - address vacío
-
-            // ACT & ASSERT
+            // dirección vacía genera error de validación
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
                     .param("lastName", "Doe")
@@ -164,9 +156,7 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando city está vacío")
         void processCreationForm_ShouldShowErrors_WhenCityEmpty() throws Exception {
-            // ARRANGE - city vacío
-
-            // ACT & ASSERT
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
                     .param("lastName", "Doe")
@@ -181,9 +171,8 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando telephone tiene formato inválido")
         void processCreationForm_ShouldShowErrors_WhenTelephoneInvalid() throws Exception {
-            // ARRANGE - telephone no tiene 10 dígitos
-
-            // ACT & ASSERT
+            // teléfono con menos de 10 dígitos
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
                     .param("lastName", "Doe")
@@ -198,9 +187,7 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando telephone contiene letras")
         void processCreationForm_ShouldShowErrors_WhenTelephoneContainsLetters() throws Exception {
-            // ARRANGE - telephone con letras
-
-            // ACT & ASSERT
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
                     .param("lastName", "Doe")
@@ -215,9 +202,8 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar múltiples errores cuando varios campos son inválidos")
         void processCreationForm_ShouldShowMultipleErrors_WhenMultipleFieldsInvalid() throws Exception {
-            // ARRANGE - múltiples campos vacíos
-
-            // ACT & ASSERT
+            // todos los campos vacíos
+            // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "")
                     .param("lastName", "")
@@ -230,7 +216,7 @@ class OwnerControllerTest {
         }
     }
 
-    // Tests para GET /owners/find
+    // formulario de búsqueda
     @Nested
     @DisplayName("GET /owners/find - Formulario de búsqueda")
     class InitFindFormTests {
@@ -238,16 +224,14 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar formulario de búsqueda")
         void initFindForm_ShouldReturnFindForm() throws Exception {
-            // ARRANGE - No requiere configuración
-
-            // ACT & ASSERT
+            // Act & Assert
             mockMvc.perform(get("/owners/find"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("owners/findOwners"));
         }
     }
 
-    // Tests para GET /owners (búsqueda)
+    // ejecución de búsqueda
 
     @Nested
     @DisplayName("GET /owners - Procesar búsqueda")
@@ -256,12 +240,11 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería redirigir a detalles cuando encuentra exactamente un owner")
         void processFindForm_ShouldRedirectToDetails_WhenSingleOwnerFound() throws Exception {
-            // ARRANGE
-            Page<Owner> singleOwnerPage = new PageImpl<>(List.of(testOwner));
+            // Arrange
+            Page<Owner> paginaUnica = new PageImpl<>(List.of(duenoPrimario));
             when(ownerRepository.findByLastNameStartingWith(anyString(), any(Pageable.class)))
-                    .thenReturn(singleOwnerPage);
-
-            // ACT & ASSERT
+                    .thenReturn(paginaUnica);
+            // Act & Assert
             mockMvc.perform(get("/owners")
                     .param("lastName", "Franklin"))
                     .andExpect(status().is3xxRedirection())
@@ -271,12 +254,11 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar lista cuando encuentra múltiples owners")
         void processFindForm_ShouldShowList_WhenMultipleOwnersFound() throws Exception {
-            // ARRANGE
-            Page<Owner> multipleOwnersPage = new PageImpl<>(List.of(testOwner, testOwner2));
+            // Arrange
+            Page<Owner> paginaMultiple = new PageImpl<>(List.of(duenoPrimario, duenoSecundario));
             when(ownerRepository.findByLastNameStartingWith(anyString(), any(Pageable.class)))
-                    .thenReturn(multipleOwnersPage);
-
-            // ACT & ASSERT
+                    .thenReturn(paginaMultiple);
+            // Act & Assert
             mockMvc.perform(get("/owners")
                     .param("lastName", ""))
                     .andExpect(status().isOk())
@@ -290,12 +272,11 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar error cuando no encuentra owners")
         void processFindForm_ShouldShowError_WhenNoOwnersFound() throws Exception {
-            // ARRANGE
-            Page<Owner> emptyPage = new PageImpl<>(List.of());
+            // Arrange
+            Page<Owner> sinResultados = new PageImpl<>(List.of());
             when(ownerRepository.findByLastNameStartingWith(anyString(), any(Pageable.class)))
-                    .thenReturn(emptyPage);
-
-            // ACT & ASSERT
+                    .thenReturn(sinResultados);
+            // Act & Assert
             mockMvc.perform(get("/owners")
                     .param("lastName", "NonExistent"))
                     .andExpect(status().isOk())
@@ -306,12 +287,11 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería buscar todos los owners cuando lastName es vacío")
         void processFindForm_ShouldSearchAll_WhenLastNameEmpty() throws Exception {
-            // ARRANGE
-            Page<Owner> allOwnersPage = new PageImpl<>(List.of(testOwner));
+            // Arrange
+            Page<Owner> todosLosDuenos = new PageImpl<>(List.of(duenoPrimario));
             when(ownerRepository.findByLastNameStartingWith(anyString(), any(Pageable.class)))
-                    .thenReturn(allOwnersPage);
-
-            // ACT & ASSERT
+                    .thenReturn(todosLosDuenos);
+            // Act & Assert
             mockMvc.perform(get("/owners")
                     .param("lastName", ""))
                     .andExpect(status().is3xxRedirection());
@@ -320,16 +300,15 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería manejar paginación correctamente")
         void processFindForm_ShouldHandlePagination() throws Exception {
-            // ARRANGE
-            Page<Owner> paginatedPage = new PageImpl<>(
-                    List.of(testOwner, testOwner2),
+            // Arrange
+            Page<Owner> paginaConMetadata = new PageImpl<>(
+                    List.of(duenoPrimario, duenoSecundario),
                     PageRequest.of(0, 5),
-                    10 // Total de 10 elementos
-            );
+                    10);
+            // Act & Assert
             when(ownerRepository.findByLastNameStartingWith(anyString(), any(Pageable.class)))
-                    .thenReturn(paginatedPage);
+                    .thenReturn(paginaConMetadata);
 
-            // ACT & ASSERT
             mockMvc.perform(get("/owners")
                     .param("page", "1")
                     .param("lastName", ""))
@@ -343,12 +322,11 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería usar página 1 por defecto")
         void processFindForm_ShouldUseDefaultPage() throws Exception {
-            // ARRANGE
-            Page<Owner> page = new PageImpl<>(List.of(testOwner, testOwner2));
+            // Arrange
+            Page<Owner> paginaDefault = new PageImpl<>(List.of(duenoPrimario, duenoSecundario));
             when(ownerRepository.findByLastNameStartingWith(anyString(), any(Pageable.class)))
-                    .thenReturn(page);
-
-            // ACT & ASSERT
+                    .thenReturn(paginaDefault);
+            // Act & Assert
             mockMvc.perform(get("/owners")
                     .param("lastName", ""))
                     .andExpect(status().isOk())
@@ -356,19 +334,17 @@ class OwnerControllerTest {
         }
     }
 
-    // Tests para GET /owners/{ownerId}
+    // visualización de detalles
 
     @Nested
     @DisplayName("GET /owners/{ownerId} - Ver detalles")
     class ShowOwnerTests {
-
         @Test
         @DisplayName("Debería mostrar detalles del owner cuando existe")
         void showOwner_ShouldShowDetails_WhenOwnerExists() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(duenoPrimario));
+            // Act & Assert
             mockMvc.perform(get("/owners/{ownerId}", 1))
                     .andExpect(status().isOk())
                     .andExpect(view().name("owners/ownerDetails"))
@@ -378,17 +354,15 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
         void showOwner_ShouldThrowException_WhenOwnerNotFound() throws Exception {
-            // ARRANGE
+            // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
-
-            // ACT & ASSERT
-            ServletException exception = assertThrows(ServletException.class, () ->
-                mockMvc.perform(get("/owners/{ownerId}", 999))
-            );
-            assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+            // Act & Assert
+            ServletException errorCapturado = assertThrows(ServletException.class,
+                    () -> mockMvc.perform(get("/owners/{ownerId}", 999)));
+            assertInstanceOf(IllegalArgumentException.class, errorCapturado.getCause());
         }
     }
-    // Tests para GET /owners/{ownerId}/edit
+    // formulario de edición
 
     @Nested
     @DisplayName("GET /owners/{ownerId}/edit - Formulario de edición")
@@ -397,10 +371,9 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar formulario de edición con datos del owner")
         void initUpdateForm_ShouldShowEditFormWithOwnerData() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(duenoPrimario));
+            // Act & Assert
             mockMvc.perform(get("/owners/{ownerId}/edit", 1))
                     .andExpect(status().isOk())
                     .andExpect(view().name("owners/createOrUpdateOwnerForm"))
@@ -410,18 +383,16 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
         void initUpdateForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
-            // ARRANGE
+            // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
-
-            // ACT & ASSERT
-            ServletException exception = assertThrows(ServletException.class, () ->
-                mockMvc.perform(get("/owners/{ownerId}/edit", 999))
-            );
-            assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+            // Act & Assert
+            ServletException excepcion = assertThrows(ServletException.class,
+                    () -> mockMvc.perform(get("/owners/{ownerId}/edit", 999)));
+            assertInstanceOf(IllegalArgumentException.class, excepcion.getCause());
         }
     }
 
-    // Tests para POST /owners/{ownerId}/edit
+    // procesamiento de edición
 
     @Nested
     @DisplayName("POST /owners/{ownerId}/edit - Procesar edición")
@@ -430,11 +401,10 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería actualizar owner y redirigir cuando datos son válidos")
         void processUpdateForm_ShouldUpdateAndRedirect_WhenValidData() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-            when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(duenoPrimario));
+            when(ownerRepository.save(any(Owner.class))).thenReturn(duenoPrimario);
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/edit", 1)
                     .param("firstName", "George")
                     .param("lastName", "Franklin")
@@ -449,10 +419,9 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando datos son inválidos")
         void processUpdateForm_ShouldShowErrors_WhenInvalidData() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(duenoPrimario));
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/edit", 1)
                     .param("firstName", "")
                     .param("lastName", "Franklin")
@@ -467,10 +436,9 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando telephone es inválido en update")
         void processUpdateForm_ShouldShowErrors_WhenTelephoneInvalid() throws Exception {
-            // ARRANGE
-            when(ownerRepository.findById(1)).thenReturn(Optional.of(testOwner));
-
-            // ACT & ASSERT
+            // Arrange
+            when(ownerRepository.findById(1)).thenReturn(Optional.of(duenoPrimario));
+            // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/edit", 1)
                     .param("firstName", "George")
                     .param("lastName", "Franklin")
