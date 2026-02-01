@@ -90,8 +90,6 @@ class VisitControllerTest {
         @DisplayName("Debería lanzar excepción cuando owner no existe")
         void initNewVisitForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
-
-            // el controlador lanza IllegalArgumentException envuelta en ServletException
             ServletException ex = assertThrows(ServletException.class,
                     () -> mockMvc.perform(get("/owners/{ownerId}/pets/{petId}/visits/new", 999, 1)));
             assertInstanceOf(IllegalArgumentException.class, ex.getCause());
@@ -101,8 +99,6 @@ class VisitControllerTest {
         @DisplayName("Debería lanzar excepción cuando pet no existe para el owner")
         void initNewVisitForm_ShouldThrowException_WhenPetNotFound() throws Exception {
             when(ownerRepository.findById(1)).thenReturn(Optional.of(propietario));
-
-            // petId 999 no pertenece a este propietario
             ServletException thrown = assertThrows(ServletException.class,
                     () -> mockMvc.perform(get("/owners/{ownerId}/pets/{petId}/visits/new", 1, 999)));
             assertInstanceOf(IllegalArgumentException.class, thrown.getCause());
@@ -145,8 +141,6 @@ class VisitControllerTest {
         @DisplayName("Debería mostrar errores cuando description es solo espacios")
         void processNewVisitForm_ShouldShowErrors_WhenDescriptionBlank() throws Exception {
             when(ownerRepository.findById(1)).thenReturn(Optional.of(propietario));
-
-            // descripción con espacios en blanco únicamente
             mockMvc.perform(post("/owners/{ownerId}/pets/{petId}/visits/new", 1, 1)
                     .param("date", LocalDate.now().toString())
                     .param("description", "   "))
