@@ -348,7 +348,7 @@ class OwnerControllerTest {
 
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
-        void showOwner_ShouldThrowException_WhenOwnerNotFound() throws Exception {
+        void showOwner_ShouldThrowException_WhenOwnerNotFound()  {
             // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
             // Act & Assert
@@ -377,7 +377,7 @@ class OwnerControllerTest {
 
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
-        void initUpdateForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
+        void initUpdateForm_ShouldThrowException_WhenOwnerNotFound()  {
             // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
             // Act & Assert

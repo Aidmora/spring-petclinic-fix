@@ -94,7 +94,7 @@ class PetControllerTest {
 
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
-        void initCreationForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
+        void initCreationForm_ShouldThrowException_WhenOwnerNotFound()  {
             // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
             // Act & Assert

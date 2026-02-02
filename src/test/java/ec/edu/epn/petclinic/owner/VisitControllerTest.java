@@ -83,7 +83,7 @@ class VisitControllerTest {
 
         @Test
         @DisplayName("Debería lanzar excepción cuando owner no existe")
-        void initNewVisitForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
+        void initNewVisitForm_ShouldThrowException_WhenOwnerNotFound()  {
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
             ServletException ex = assertThrows(ServletException.class,
                     () -> mockMvc.perform(get("/owners/{ownerId}/pets/{petId}/visits/new", 999, 1)));
@@ -92,7 +92,7 @@ class VisitControllerTest {
 
         @Test
         @DisplayName("Debería lanzar excepción cuando pet no existe para el owner")
-        void initNewVisitForm_ShouldThrowException_WhenPetNotFound() throws Exception {
+        void initNewVisitForm_ShouldThrowException_WhenPetNotFound()  {
             when(ownerRepository.findById(1)).thenReturn(Optional.of(propietario));
             ServletException thrown = assertThrows(ServletException.class,
                     () -> mockMvc.perform(get("/owners/{ownerId}/pets/{petId}/visits/new", 1, 999)));

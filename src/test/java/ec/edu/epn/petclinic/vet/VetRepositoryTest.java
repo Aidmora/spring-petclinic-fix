@@ -1,6 +1,7 @@
 package ec.edu.epn.petclinic.vet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +38,7 @@ class VetRepositoryTest {
         // Arrange & Act
         Collection<Vet> todosLosVets = vetRepository.findAll();
         // Assert
+        assertFalse(todosLosVets.isEmpty());
         assertThat(todosLosVets).allSatisfy(v -> {
             assertThat(v.getId()).isNotNull();
             assertThat(v.getId()).isPositive();

@@ -34,17 +34,24 @@ class PetTypeRepositoryTest {
     }
 
     @Test
-    @DisplayName("findPetTypes - Debería retornar tipos con ID y nombre válidos")
-    void findPetTypes_ShouldReturnTypesWithValidIdAndName() {
-        // Arrange & Act
-        List<PetType> tiposMascota = petTypeRepository.findPetTypes();
-        // Assert
-        assertThat(tiposMascota).allSatisfy(tipo -> {
-            assertThat(tipo.getId()).isNotNull();
-            assertThat(tipo.getId()).isPositive();
-            assertThat(tipo.getName()).isNotBlank();
+@DisplayName("findPetTypes - Debería retornar tipos con ID y nombre válidos")
+void findPetTypes_ShouldReturnTypesWithValidIdAndName() {
+    // Arrange & Act
+    List<PetType> tiposMascota = petTypeRepository.findPetTypes();
+
+    // Assert
+    assertThat(tiposMascota)
+        .isNotEmpty() // Primera validación: la lista no está vacía
+        .allSatisfy(tipo -> {
+            // Encadenamos las validaciones del objeto 'tipo'
+            assertThat(tipo.getId())
+                .isNotNull()
+                .isPositive();
+            
+            assertThat(tipo.getName())
+                .isNotBlank();
         });
-    }
+}
 
     // -- Búsqueda por ID --
 
