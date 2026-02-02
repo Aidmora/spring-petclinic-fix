@@ -44,19 +44,14 @@ class VisitControllerTest {
 
     @BeforeEach
     void setUp() {
-        // tipo de animal para las pruebas
         tipoGato = new PetType();
         tipoGato.setId(1);
         tipoGato.setName("cat");
-
-        // mascota asociada al propietario
         mascotaPrueba = new Pet();
         mascotaPrueba.setId(1);
         mascotaPrueba.setName("Leo");
         mascotaPrueba.setBirthDate(LocalDate.of(2020, 5, 15));
         mascotaPrueba.setType(tipoGato);
-
-        // propietario base con mascota vinculada
         propietario = new Owner();
         propietario.setId(1);
         propietario.setFirstName("George");
@@ -67,7 +62,7 @@ class VisitControllerTest {
         propietario.getPets().add(mascotaPrueba);
     }
 
-    // Sección: formulario para registrar nueva visita
+    // Formulario para registrar nueva visita
 
     @Nested
     @DisplayName("GET /owners/{ownerId}/pets/{petId}/visits/new - Formulario de nueva visita")
@@ -105,7 +100,7 @@ class VisitControllerTest {
         }
     }
 
-    // Sección: procesamiento del formulario de visita
+    // Procesamiento del formulario de visita
     @Nested
     @DisplayName("POST /owners/{ownerId}/pets/{petId}/visits/new - Procesar nueva visita")
     class ProcessNewVisitFormTests {

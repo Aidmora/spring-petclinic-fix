@@ -16,7 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Tests de integración - VetRepository
- * Valida operaciones CRUD y paginación sobre la tabla de veterinarios.
  */
 @DataJpaTest
 @ActiveProfiles("test")
@@ -59,8 +58,7 @@ class VetRepositoryTest {
                 .extracting(Vet::getLastName)
                 .contains("Carter");
     }
-
-    // -- Pruebas de paginación --
+    // Pruebas de paginación
 
     @Test
     @DisplayName("findAll(Pageable) - Debería retornar primera página correctamente")
@@ -102,7 +100,7 @@ class VetRepositoryTest {
         assertThat(sinResultados.getTotalElements()).isEqualTo(6);
     }
 
-    // -- Relación Vet-Specialty --
+    // Relación Vet-Specialty
 
     @Test
     @DisplayName("findAll - Debería cargar especialidades de Helen Leary (radiology)")

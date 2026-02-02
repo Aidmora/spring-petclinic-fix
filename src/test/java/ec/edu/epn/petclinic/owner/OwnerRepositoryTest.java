@@ -15,7 +15,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Tests de integración para OwnerRepository.
- * Usa H2 en memoria, carga schema.sql y data.sql automáticamente.
  */
 @DataJpaTest
 @ActiveProfiles("test")
@@ -51,7 +50,7 @@ class OwnerRepositoryTest {
         assertThat(noExiste).isEmpty();
     }
 
-    // -- Búsqueda por apellido --
+    // -Búsqueda por apellido
 
     @Test
     @DisplayName("findByLastNameStartingWith - Debería retornar owners que empiecen con 'Davis'")
@@ -107,7 +106,7 @@ class OwnerRepositoryTest {
         assertThat(todos.getContent()).hasSize(10);
     }
 
-    // -- Paginación --
+    // Paginación
 
     @Test
     @DisplayName("findByLastNameStartingWith - Debería paginar correctamente")
@@ -125,7 +124,7 @@ class OwnerRepositoryTest {
         assertThat(primeraPagina.getTotalPages()).isEqualTo(2);
     }
 
-    // -- Persistencia de nuevos owners --
+    // Persistencia de nuevos owners
 
     @Test
     @DisplayName("save - Debería guardar un nuevo Owner correctamente")
@@ -164,7 +163,7 @@ class OwnerRepositoryTest {
         assertThat(actualizado.getFirstName()).isNotEqualTo(nombreOriginal);
     }
 
-    // -- Relación Owner-Pet --
+    // Relación Owner-Pet
 
     @Test
     @DisplayName("findById - Debería cargar las mascotas del Owner (EAGER loading)")
