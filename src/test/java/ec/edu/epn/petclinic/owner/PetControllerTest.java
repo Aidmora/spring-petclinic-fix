@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Validación del controlador de mascotas con MockMvc.
- * Incluye escenarios de alta, edición y gestión de tipos.
  */
 @WebMvcTest(PetController.class)
 @Import(PetTypeFormatter.class)
@@ -51,7 +50,6 @@ class PetControllerTest {
 
     @BeforeEach
     void setUp() {
-        // definición de tipos disponibles
         tipoPerro = new PetType();
         tipoPerro.setId(1);
         tipoPerro.setName("dog");
@@ -59,8 +57,6 @@ class PetControllerTest {
         tipoFelino = new PetType();
         tipoFelino.setId(2);
         tipoFelino.setName("cat");
-
-        // propietario para las pruebas
         propietarioBase = new Owner();
         propietarioBase.setId(1);
         propietarioBase.setFirstName("George");
@@ -68,8 +64,6 @@ class PetControllerTest {
         propietarioBase.setAddress("110 W. Liberty St.");
         propietarioBase.setCity("Madison");
         propietarioBase.setTelephone("6085551023");
-
-        // mascota ya registrada
         animalExistente = new Pet();
         animalExistente.setId(1);
         animalExistente.setName("Leo");
@@ -103,8 +97,6 @@ class PetControllerTest {
         void initCreationForm_ShouldThrowException_WhenOwnerNotFound() throws Exception {
             // Arrange
             when(ownerRepository.findById(999)).thenReturn(Optional.empty());
-
-            // propietario inexistente provoca error
             // Act & Assert
             ServletException fallo = assertThrows(ServletException.class,
                     () -> mockMvc.perform(get("/owners/{ownerId}/pets/new", 999)));
@@ -157,8 +149,6 @@ class PetControllerTest {
             // Arrange
             when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
             when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
-
-            // sin fecha de nacimiento
             // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
@@ -192,8 +182,6 @@ class PetControllerTest {
             // Arrange
             when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
             when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
-
-            // tipo de mascota no especificado
             // Act & Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
@@ -212,11 +200,8 @@ class PetControllerTest {
             propietarioBase.addPet(mascotaPrevia);
             mascotaPrevia.setId(10);
             // Act
-
             when(ownerRepository.findById(1)).thenReturn(Optional.of(propietarioBase));
             when(petTypeRepository.findPetTypes()).thenReturn(List.of(tipoPerro, tipoFelino));
-
-            // nombre repetido
             // Assert
             mockMvc.perform(post("/owners/{ownerId}/pets/new", 1)
                     .param("name", "Buddy")
@@ -320,8 +305,6 @@ class PetControllerTest {
             otraMascota.setName("Max");
             otraMascota.setType(tipoPerro);
             otraMascota.setBirthDate(LocalDate.of(2019, 1, 1));
-
-            // agregar primero la otra mascota para que se detecte duplicado
             propietarioBase.getPets().add(otraMascota);
             propietarioBase.getPets().add(animalExistente);
             // Act

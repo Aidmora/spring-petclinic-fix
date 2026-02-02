@@ -30,7 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Tests de integración del controlador de propietarios.
- * Verificación de endpoints CRUD y búsqueda paginada.
  */
 @WebMvcTest(OwnerController.class)
 @ActiveProfiles("test")
@@ -64,7 +63,7 @@ class OwnerControllerTest {
         duenoSecundario.setTelephone("6085551749");
     }
 
-    // === Bloque: formulario de alta ===
+    // formulario de alta
     @Nested
     @DisplayName("GET /owners/new - Formulario de creación")
     class InitCreationFormTests {
@@ -80,7 +79,7 @@ class OwnerControllerTest {
         }
     }
 
-    // === Bloque: procesamiento de alta ===
+    // procesamiento de alta
 
     @Nested
     @DisplayName("POST /owners/new - Procesar creación")
@@ -109,7 +108,6 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando firstName está vacío")
         void processCreationForm_ShouldShowErrors_WhenFirstNameEmpty() throws Exception {
-            // firstName sin contenido
             // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "")
@@ -140,7 +138,6 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando address está vacío")
         void processCreationForm_ShouldShowErrors_WhenAddressEmpty() throws Exception {
-            // dirección vacía genera error de validación
             // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
@@ -171,7 +168,6 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar errores cuando telephone tiene formato inválido")
         void processCreationForm_ShouldShowErrors_WhenTelephoneInvalid() throws Exception {
-            // teléfono con menos de 10 dígitos
             // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "John")
@@ -202,7 +198,6 @@ class OwnerControllerTest {
         @Test
         @DisplayName("Debería mostrar múltiples errores cuando varios campos son inválidos")
         void processCreationForm_ShouldShowMultipleErrors_WhenMultipleFieldsInvalid() throws Exception {
-            // todos los campos vacíos
             // Act & Assert
             mockMvc.perform(post("/owners/new")
                     .param("firstName", "")

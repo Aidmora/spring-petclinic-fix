@@ -139,8 +139,7 @@ class PetTypeRepositoryTest {
         assertThat(eliminado).isEmpty();
     }
 
-    // -- Conteo --
-
+    // Conteo
     @Test
     @DisplayName("count - Debería retornar el número correcto de tipos")
     void count_ShouldReturnCorrectNumberOfTypes() {
@@ -150,7 +149,7 @@ class PetTypeRepositoryTest {
         assertThat(cantidad).isEqualTo(6);
     }
 
-    // -- Existencia --
+    // Existencia
 
     @Test
     @DisplayName("existsById - Debería retornar true cuando existe el tipo")
