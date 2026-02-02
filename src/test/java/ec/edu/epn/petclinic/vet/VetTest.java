@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Pruebas unitarias para la entidad Vet.
- * Valida la lógica de negocio relacionada con la gestión de especialidades.
  */
 class VetTest {
 
@@ -77,7 +76,7 @@ class VetTest {
 			radiology.setName("radiology");
 			// Act
 			vet.addSpecialty(radiology);
-			vet.addSpecialty(radiology); // Intentar agregar la misma especialidad
+			vet.addSpecialty(radiology); 
 			// Assert
 			assertThat(vet.getSpecialties()).hasSize(1);
 		}
